@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Fit microcalorimetry heat flow data and calculate microbal...</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+
+<table width="100%" summary="page for heatflow {microcalorimetry}"><tr><td>heatflow {microcalorimetry}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Fit microcalorimetry heat flow data and calculate microbal community growth parameters</h2>
+
+<h3>Description</h3>
+
+<p>The function efficiently fits data with linear or non-linear model (generally with R2 &gt; 0.99), returns P0/estimated.P0 (micrbial innitial biomass), k (microbial growth activity), dorment/active microbial biomass (parameter: nonactive/active), Pmax (maximum potential activety), and Std.Error of parameters.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+heatflow=(input,nl_model=F,active_part_given=F,bootstrap=T,boot.N=1000,nrow.facet_wrap=NULL,
+                  gaps=c("10s","60s","120s"),time.unit=c("s","min","h"),flow.unit=c("W","mW","uW"))
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>input</code></td>
+<td>
+<p>heatflow data. can be matrix/dataframe, list(data1,data2,...), or a directory cntains multiple text files. the format of data matrix should bee same with data <code>heat</code> (row 1: active.part, number or NA; row 2 to 3: start and end baseline, if the data were already substracted by baseline supply 0.)</p>
+</td></tr>
+<tr valign="top"><td><code>nl_model</code></td>
+<td>
+<p>logical. If TRUE, fit heat data with nonlinear model function; if FALSE, fit linear-transformed heat flow data with linear model function. Suggest the default linear fit</p>
+</td></tr>
+<tr valign="top"><td><code>active_part_given</code></td>
+<td>
+<p>logical. If TRUE, fit heat data with active part known (usually use the base  heat flow rate (P0) of control experiment as the known active part); if FALSE, both active and nonactive (dorment) part were estimated by fitting. Suggest the default linear fitting without known active part</p>
+</td></tr>
+<tr valign="top"><td><code>bootstrap</code></td>
+<td>
+<p>logical. If TRUE, estimate Std.Error of parameters with bootstrap. Default TRUE</p>
+</td></tr>
+<tr valign="top"><td><code>boot.N</code></td>
+<td>
+<p>Resample times for bootstrapping. Larger number returns better estimates but requires more run time. Default 100.</p>
+</td></tr>
+<tr valign="top"><td><code>gaps</code></td>
+<td>
+<p>vector or character ('number' + 's'). &quot;10s&quot; suggests collecting data every 10 seconds. Higher density of data collection returns better fittings and estimates but consume more run time</p>
+</td></tr>
+<tr valign="top"><td><code>time.unit</code></td>
+<td>
+<p>The time unit of origin heat data. Generally &quot;s&quot; (second). This fuction finally transform the time unit of data to 'h' (hour)</p>
+</td></tr>
+<tr valign="top"><td><code>flow.unit</code></td>
+<td>
+<p>The unit of heat flow rate. Generally &quot;uW&quot; (10^-6 W). This fuction finally transform the unit of heat flow rate to 'uW'</p>
+</td></tr>
+<tr valign="top"><td><code>nrow.facet_wrap</code></td>
+<td>
+<p>Number of columns of subfigers. see <code><a href="../../ggplot2/html/ggplot.html">ggplot</a></code> and <code><a href="../../ggplot2/html/facet_wrap.html">facet_wrap</a></code> in library <code><a href="../../ggplot2/html/ggplot2-package.html">ggplot2</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Author(s)</h3>
+
+<p>Ruirui Chen and Zhongwang Jing
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+  library(ggplot2)
+
+  #data mode: matrix
+  data(heat)
+
+  re=heatflow(heat,boot.N=10)
+  re$all_result$`60s`$data_t1$fit.method
+  re$RE
+  re$nonlinear_plot$`120s`
+  re$linear_plot$`120s`
+  re$nonlinear_plot$`60s`
+  re$linear_plot$`10s`
+
+  re=heatflow(heat,nl_model=F,active_part_given=T,boot.N = 10,gaps = '40s')
+  re$RE
+  re$nonlinear_plot$`40s`
+  re$linear_plot$`40s`
+
+
+
+  #data mode: directory
+  new_dir=paste(getwd(),'/heat.data',sep='')
+  mkdir(new_dir)
+  write.table(heat, paste(new_dir,'/heat1.txt',sep=''),sep = '\t',row.names = T)
+  write.table(heat, paste(new_dir,'/heat2.txt',sep=''),sep = '\t',row.names = T)
+
+  #active part known
+  re=heatflow(new_dir,nl_model=F,active_part_given=T,boot.N = 10,gaps = '40s')
+  re$RE
+  re$nonlinear_plot$`40s`
+
+  #active part not given
+  re=heatflow(new_dir,nl_model=T,active_part_given=F,boot.N = 10,gaps = '40s')
+  re$RE
+  re$nonlinear_plot$`40s`
+
+
+
+  #data mode: list
+  data(heat.data)
+  names(heat.data)
+  re=heatflow(heat.data,boot.N=10,gaps = c('10s','120s'))
+  re$RE
+  re$nonlinear_plot$`10s`
+  re$nonlinear_plot$`120s`
+
+  re$linear_plot$`10s`
+  re$linear_plot$`120s`
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>microcalorimetry</em> version 1.0 <a href="00Index.html">Index</a>]</div>
+</body></html>
