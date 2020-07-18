@@ -1,0 +1,5 @@
+#exportPattern("^[[:alpha:]]+")
+## Exports
+export(heatflow,as.colmat,mkdir,slop)
+## Imports
+import(ggplot2)
